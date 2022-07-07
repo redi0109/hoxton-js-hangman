@@ -1,8 +1,17 @@
 import './style.css'
 
-const app = document.querySelector<HTMLDivElement>('#app')!
+let state = {
+word: '',
+characteres: [],
+maxAttemps: 6,
+}
 
-app.innerHTML = `
-  <h1>Hello Vite!</h1>
-  <a href="https://vitejs.dev/guide/features.html" target="_blank">Documentation</a>
-`
+function getMistakeCount(){
+  state.characteres.filter(char => !state.word.includes(char)).length //includes metode per te gjetur nese nje karakter i perket fjales
+}
+
+
+
+function render(){
+
+}
