@@ -1,13 +1,25 @@
 import './style.css'
 
-let state = {
-word: '',
-characteres: [],
-maxAttemps: 6,
+type Words = string[]
+
+
+type State = {
+  word: string,
+  characters: string[],
+  mistakeCount: number
+}
+
+let words: Words = ['apple', 'banana', 'orange', 'pineapple', 'strawberry', 'watermelon'] 
+
+let state: State = {
+  word: '',
+  characters: [],
+  mistakeCount: 0
 }
 
 function getMistakeCount(){
-  state.characteres.filter(char => !state.word.includes(char)).length //includes metode per te gjetur nese nje karakter i perket fjales
+  let mistakeCount = state.characteres.filter(char => !state.word.includes(char)) //includes metode per te gjetur nese nje karakter i perket fjales
+  return mistakeCount
 }
 
 
