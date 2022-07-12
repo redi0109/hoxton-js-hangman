@@ -7,7 +7,7 @@ type State = {
   word: string,
   characters: string[],
   maxMistakes: number,
-  // guessed: boolean
+  streak: number
 }
 
 let words: Words = ['apple', 'banana', 'orange', 'pineapple', 'strawberry', 'watermelon'] 
@@ -16,7 +16,18 @@ let state: State = {
   word: 'apple',
   characters: [],
   maxMistakes: 6,
-  // guessed: false
+  streak: 0
+}
+
+function getRandomWord () {
+  let randomIndex = Math.floor(Math.random() * words.length)
+  return words[randomIndex]
+}
+
+function restartGame () {
+  state.word = getRandomWord()
+  state.characters = []
+  render()
 }
 
 function getMistakes(){
@@ -29,19 +40,100 @@ function getMistakeCount(){
   return mistakes.length
 }
 
+function getCorrectGuesses () {
+  return state.characters.filter(char => state.word.includes(char))
+}
+
+
+
 function ifUserWon(){
-  if (getMistakeCount() === 0) {
-    alert('You won!')
-  }
+for (let char of state.characters) {
+  if (!state.word.includes(char)) return false
+}
+return true
 }
 
 function ifUserLost(){
-  if (getMistakeCount() === state.maxMistakes) {
-    alert('You lost!')
+  return getMistakeCount() >= state.maxMistakes
+}
+
+function renderWord () {
+  let wordEl = document.createElement('div')
+  wordEl.className = 'word'
+
+  let correctGuesses = getCorrectGuesses()
+
+  for (let char of state.word) {
+    let charEl = document.createElement('span')
+    charEl.className = 'char'
+
+    if (correctGuesses.includes(char)) {
+      charEl.textContent = char
+    } else {
+      charEl.textContent = '_'
+    }
+
+    wordEl.append(charEl)
   }
-}   
 
+  return wordEl
+}
 
+function renderMistakes () {
+  let mistakesSpan = document.createElement('div')
+  mistakesSpan.className = 'mistakes'
+  mistakesSpan.textContent = `Mistakes: ${getMistakes()} (${getMistakeCount()})`
+
+  if (getMistakeCount() === state.maxMistakes - 1)
+    mistakesSpan.classList.add('almost-lost')
+
+  return mistakesSpan
+}
+
+function renderWinningMessage () {
+  let winMessageDiv = document.createElement('div')
+
+  let winMessageP = document.createElement('p')
+  winMessageP.textContent = 'You win! 🎉'
+
+  let restartButton = document.createElement('button')
+  restartButton.textContent = 'RESTART'
+  restartButton.className = 'restart-button'
+  restartButton.addEventListener('click', function () {
+    state.streak++
+    restartGame()
+  })
+
+  winMessageDiv.append(winMessageP, restartButton)
+
+  return winMessageDiv
+}
+
+function renderLosingMessage () {
+  let lostMessageDiv = document.createElement('div')
+
+  let lostMessageP = document.createElement('p')
+  lostMessageP.textContent = `You lose! 🤕 The word was: ${state.word}`
+
+  let restartButton = document.createElement('button')
+  restartButton.textContent = 'RESTART'
+  restartButton.className = 'restart-button'
+  restartButton.addEventListener('click', function () {
+    state.streak = 0
+    restartGame()
+  })
+
+  lostMessageDiv.append(lostMessageP, restartButton)
+
+  return lostMessageDiv
+}
+
+function renderStreak () {
+  let streakDiv = document.createElement('div')
+  streakDiv.className = 'streak'
+  streakDiv.textContent = `Streak: ${state.streak}`
+  return streakDiv
+}
 
 function render(){
 let appEl = document.querySelector('#app')
@@ -49,18 +141,35 @@ if (appEl === null) return
 
 appEl.textContent = ''
 
-let mistakesSpan = document.createElement('span')
-mistakesSpan.textContent = `Mistakes: ${getMistakes()} ${getMistakeCount()}`
-appEl.append(mistakesSpan)
+let wordEl = renderWord()
+  let mistakesSpan = renderMistakes()
+  let streakEl = renderStreak()
+
+  appEl.append(wordEl, mistakesSpan, streakEl)
+
+  if (ifUserWon()) {
+    let winningMessageDiv = renderWinningMessage()
+    appEl.append(winningMessageDiv)
+  }
+
+  if (ifUserLost()) {
+    let losingMessageDiv = renderLosingMessage()
+    appEl.append(losingMessageDiv)
+  }
 }
 
 function getKeyPressesFromUser (){
   document.addEventListener('keyup', function(event) {
-
+    let guess = event.key.toLowerCase()
     let letters = 'abcdefghijklmnopqrstuvwxyz'
-    if (!letters.includes(event.key)) return
 
-    //no repeated charcters
+    if (!letters.includes(guess)) return
+
+    if (state.characters.includes(guess)) return
+
+    if (ifUserLost()) return
+
+    if (ifUserWon()) return
     if (state.characters.includes(event.key)) return
     state.characters.push(event.key)
        render()
@@ -69,7 +178,3 @@ function getKeyPressesFromUser (){
 
 getKeyPressesFromUser ()
 render()
-
-window.state = state
-window.getMistakes = getMistakes
-window.getMistakeCount = getMistakeCount
